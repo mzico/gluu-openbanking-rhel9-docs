@@ -1,0 +1,20 @@
+site_name: Gluu Open Banking on RHEL 9
+site_description: Customer deployment guide for Gluu Open Banking on a RHEL 9 virtual machine
+site_author: Gluu
+
+nav:
+  - Installation guide: index.md
+
+theme:
+  name: readthedocs
+  highlightjs: true
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+
+strict: true
+use_directory_urls: true
