@@ -167,7 +167,52 @@ A restrictive inherited umask can make runtime files unreadable to the `jetty` o
 
 ## 5. Freeze and validate installer inputs
 
-Obtain these through approved channels:
+### Where to obtain the software
+
+The VM installer is public, but the Open Banking profile overlay is not a public standalone RPM or anonymous download. Obtain each input as follows:
+
+| Input | Source |
+|---|---|
+| Jans installer wrapper, `install.py` | Public [`JanssenProject/jans`](https://github.com/JanssenProject/jans) repository |
+| Jans setup source, `jans.zip` | A release tag or reviewed commit from the same public Jans repository |
+| Open Banking profile, `openbanking.zip` | Private [`GluuFederation/openbanking`](https://github.com/GluuFederation/openbanking) repository; the deploying GitHub account must be granted access by the Gluu delivery/support owner, or must receive an approved release archive through the organization's secure delivery channel |
+| Optional Flex/Admin UI RPM and signature bundle | [Gluu Flex GitHub releases](https://github.com/GluuFederation/flex/releases); an SSA obtained through the Gluu trial or subscription process is also required for licensing |
+
+The [official Open Banking VM guide](https://docs.gluu.org/stable/openbanking/install-vm/) documents the convenience entry point:
+
+```bash
+curl --fail --location --output install.py \
+  https://raw.githubusercontent.com/JanssenProject/jans/main/jans-linux-setup/jans_setup/install.py
+sudo python3 install.py --profile openbanking
+```
+
+That wrapper downloads Jans setup and its selected component artifacts. For the Open Banking profile it also requests a GitHub access token so it can retrieve the private overlay. Do not put a token in the URL, shell history, a logged command-line argument, or this guide. The tested wrapper reads its interactive token prompt visibly, so use it only from a private console; the reproducible staged method below is preferred.
+
+For a pinned deployment, obtain the public files at the approved Jans tag or commit:
+
+```bash
+JANS_REF='<approved-jans-tag-or-full-commit>'
+
+curl --fail --location --output /secure/source/install.py \
+  "https://raw.githubusercontent.com/JanssenProject/jans/${JANS_REF}/jans-linux-setup/jans_setup/install.py"
+curl --fail --location --output /secure/source/jans.zip \
+  "https://github.com/JanssenProject/jans/archive/${JANS_REF}.zip"
+```
+
+After access to the private Open Banking repository has been approved, use an authenticated Git credential helper to create the overlay archive without placing credentials in the command:
+
+```bash
+OB_REF='<approved-openbanking-tag-or-full-commit>'
+
+git clone https://github.com/GluuFederation/openbanking.git /secure/source/openbanking
+git -C /secure/source/openbanking checkout --detach "$OB_REF"
+git -C /secure/source/openbanking archive \
+  --format=zip --output=/secure/source/openbanking.zip "$OB_REF"
+```
+
+If repository access is not available, stop and request the approved `openbanking.zip` plus its tag/commit, checksum, and provenance from the Gluu delivery/support owner. Do not substitute an arbitrary attachment or an unverified archive.
+
+Obtain and freeze these inputs before continuing:
 
 - the official `install.py` wrapper;
 - a Jans source archive pinned to `JANS_REF`;
