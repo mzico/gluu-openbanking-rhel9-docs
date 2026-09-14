@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="Customer deployment guide for Gluu Open Banking on a RHEL 9 virtual machine" /><meta name="author" content="Gluu" />
+      <link rel="shortcut icon" href="img/favicon.ico" />
+    <title>Gluu Open Banking on RHEL 9</title>
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Installation guide";
+        var mkdocs_page_input_path = "index.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="." class="icon icon-home"> Gluu Open Banking on RHEL 9
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Installation guide</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#purpose-and-support-boundary">Purpose and support boundary</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-collect-deployment-values">1. Collect deployment values</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-preflight-the-clean-vm">2. Preflight the clean VM</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#add-persistent-swap-when-required">Add persistent swap when required</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-establish-hostname-and-client-routing">3. Establish hostname and client routing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-prepare-rhel-9">4. Prepare RHEL 9</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#selinux">SELinux</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#firewall-and-rpm-dependencies">Firewall and RPM dependencies</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-freeze-and-validate-installer-inputs">5. Freeze and validate installer inputs</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#where-to-obtain-the-software">Where to obtain the software</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#mandatory-compatibility-review">Mandatory compatibility review</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-prepare-installation-answers-safely">6. Prepare installation answers safely</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7-install-the-open-banking-profile">7. Install the Open Banking profile</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#8-validate-the-core-installation">8. Validate the core installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#9-install-admin-ui-as-a-separate-licensed-phase">9. Install Admin UI as a separate licensed phase</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#required-open-bankingadmin-ui-integration-checks">Required Open Banking/Admin UI integration checks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#prevent-the-post-login-redirecting-loop">Prevent the post-login Redirecting... loop</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#10-full-acceptance-test">10. Full acceptance test</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#11-known-issue-ssa-dynamic-client-registration">11. Known issue: SSA dynamic client registration</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#12-troubleshooting-map">12. Troubleshooting map</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#13-evidence-handoff-and-rollback">13. Evidence, handoff, and rollback</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#appendix-a-verified-test-host-artifacts">Appendix A: verified test-host artifacts</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href=".">Gluu Open Banking on RHEL 9</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Installation guide</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="install-gluu-open-banking-on-rhel-9">Install Gluu Open Banking on RHEL 9<a class="headerlink" href="#install-gluu-open-banking-on-rhel-9" title="Permanent link">&para;</a></h1>
+<h2 id="purpose-and-support-boundary">Purpose and support boundary<a class="headerlink" href="#purpose-and-support-boundary" title="Permanent link">&para;</a></h2>
+<p>This runbook installs a single-node Gluu Open Banking/Janssen environment on a clean RHEL 9 x86_64 VM. It combines the official VM workflow with fixes proven during a complete RHEL 9.8 installation, Admin UI integration, browser test, mTLS regression test, and reboot test.</p>
+<p>Run privileged command blocks from a root shell, or prefix individual commands with <code>sudo</code>. Read-only client validation commands can run as an unprivileged user that can read the designated test CA and client credentials.</p>
+<p>The Open Banking VM distribution is intended for development and testing. Prefer the cloud-native distribution and production-grade PKI, DNS, backup, monitoring, and change control for production.</p>
+<p>Authoritative references:</p>
+<ul>
+<li><a href="https://docs.gluu.org/stable/openbanking/install-vm/">Official Gluu Open Banking VM guide</a></li>
+<li><a href="https://docs.gluu.org/stable/install/vm-install/rhel/">Official Gluu Flex RHEL guide</a></li>
+<li><a href="https://github.com/JanssenProject/jans/blob/main/jans-linux-setup/jans_setup/install.py">Current Janssen installer wrapper</a></li>
+<li>RHEL 9 execution plan (internal verification record)</li>
+<li>Verified RHEL 9.8 installation work log (internal verification record)</li>
+</ul>
+<blockquote>
+<p>Important: the current public installer and private Open Banking overlay can move independently. Pin both sources, hash every input, and validate their compatibility before changing the server. Do not copy the example deployment's commits or hashes blindly into a new installation.</p>
+</blockquote>
+<h2 id="1-collect-deployment-values">1. Collect deployment values<a class="headerlink" href="#1-collect-deployment-values" title="Permanent link">&para;</a></h2>
+<p>Record these values before connecting to the VM. Keep passwords, SSA JWTs, private keys, client assertions, and bearer tokens out of chat, shell arguments, and shared logs.</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Meaning</th>
+<th>Example from the verified test only</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FQDN</code></td>
+<td>Server hostname</td>
+<td><code>testobrhel9.gluu.info</code></td>
+</tr>
+<tr>
+<td><code>INTERFACE_IP</code></td>
+<td>Static address assigned to a VM interface</td>
+<td><code>172.31.45.215</code></td>
+</tr>
+<tr>
+<td><code>PUBLIC_OR_REACHABLE_IP</code></td>
+<td>NAT/public destination used by test clients</td>
+<td><code>54.213.215.176</code></td>
+</tr>
+<tr>
+<td><code>JANS_REF</code></td>
+<td>Pinned Jans branch, tag, or commit</td>
+<td>Record the full immutable value</td>
+</tr>
+<tr>
+<td><code>OB_REF</code></td>
+<td>Pinned private Open Banking commit</td>
+<td>Record from the supplied archive</td>
+</tr>
+<tr>
+<td><code>APP_RAM_MB</code></td>
+<td>Jans application memory</td>
+<td><code>4096</code></td>
+</tr>
+<tr>
+<td><code>EVIDENCE_DIR</code></td>
+<td>Root-only audit directory</td>
+<td><code>/root/openbanking-evidence-&lt;UTC&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<p>Set the real values in the root shell before running examples; do not paste angle-bracket placeholders literally.</p>
+<p>Also decide:</p>
+<ul>
+<li>public DNS or a documented client-side hosts entry;</li>
+<li>local MySQL or an approved remote MySQL topology (the tested profile used local MySQL);</li>
+<li>generated Jans signing keys or approved external keys/JWKS;</li>
+<li>certificate subject and server trust policy;</li>
+<li>whether Admin UI is required and licensed;</li>
+<li>whether full SSA dynamic client registration is in scope;</li>
+<li>how the administrator password, SSA, Directory keys, transport PKCS#12, and truststore will be delivered securely.</li>
+</ul>
+<h2 id="2-preflight-the-clean-vm">2. Preflight the clean VM<a class="headerlink" href="#2-preflight-the-clean-vm" title="Permanent link">&para;</a></h2>
+<p>Minimum resources are 2 CPUs, 4 GB RAM, 2 GB persistent swap, and 50 GB disk. A more comfortable tested allocation is 4 CPUs, 8 GB or more RAM, and <code>4096</code> MB application memory.</p>
+<p>Run the read-only checks first:</p>
+<pre><code class="language-bash">cat /etc/redhat-release
+cat /etc/os-release
+uname -m
+hostnamectl
+nproc
+free -h
+swapon --show
+lsblk
+df -hT /
+ip -brief address
+timedatectl
+ss -lntup
+getenforce
+firewall-cmd --state || true
+dnf repolist --enabled
+dnf list --available mysql-server mod_auth_openidc
+rpm -qa | grep -Ei 'jans|gluu|flex|httpd|apache|mysql|mariadb|postgres|java|jetty' || true
+find /opt/jans /etc/jans /etc/certs -maxdepth 2 -print 2&gt;/dev/null
+systemctl --failed
+</code></pre>
+<p>Continue only when all of these are true:</p>
+<ul>
+<li>RHEL 9 x86_64 is installed and package repositories are reachable.</li>
+<li>The minimum resources are available.</li>
+<li>Time synchronization is active.</li>
+<li>The chosen hostname resolves to the VM's interface address locally.</li>
+<li>TCP 80 and 443 are free, or existing listeners have an approved disposition.</li>
+<li>The cloud firewall/security group allows SSH from the operator and HTTPS from test clients.</li>
+<li>No Jans, Gluu, Flex, database, certificate, or configuration data needs preservation.</li>
+<li>Outbound HTTPS works with normal certificate verification.</li>
+</ul>
+<p>Stop if an existing installation is found. This guide is not an in-place upgrade procedure.</p>
+<h3 id="add-persistent-swap-when-required">Add persistent swap when required<a class="headerlink" href="#add-persistent-swap-when-required" title="Permanent link">&para;</a></h3>
+<p>First confirm <code>/swapfile</code> does not exist and no conflicting swap policy is present. Then:</p>
+<pre><code class="language-bash">cp -a /etc/fstab /etc/fstab.pre-openbanking
+fallocate -l 2G /swapfile
+chmod 0600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap sw 0 0' &gt;&gt; /etc/fstab
+systemctl daemon-reload
+findmnt --verify --verbose
+swapon --show
+free -h
+</code></pre>
+<h2 id="3-establish-hostname-and-client-routing">3. Establish hostname and client routing<a class="headerlink" href="#3-establish-hostname-and-client-routing" title="Permanent link">&para;</a></h2>
+<p>Set the intended FQDN and confirm it resolves to the address assigned to the VM interface:</p>
+<pre><code class="language-bash">hostnamectl set-hostname FQDN.example.org
+hostname -f
+getent hosts FQDN.example.org
+ip -brief address
+</code></pre>
+<p>When public DNS intentionally does not point at the test VM, add a hosts entry on every test client:</p>
+<pre><code class="language-text">PUBLIC_OR_REACHABLE_IP FQDN.example.org
+</code></pre>
+<p>Record this limitation. External tests must reach the intended VM, not whichever host public DNS currently identifies.</p>
+<h2 id="4-prepare-rhel-9">4. Prepare RHEL 9<a class="headerlink" href="#4-prepare-rhel-9" title="Permanent link">&para;</a></h2>
+<h3 id="selinux">SELinux<a class="headerlink" href="#selinux" title="Permanent link">&para;</a></h3>
+<p>The tested official RHEL path uses permissive mode. Back up the configuration, set permissive mode, and verify it. Do not disable SELinux.</p>
+<pre><code class="language-bash">cp -a /etc/selinux/config /etc/selinux/config.pre-openbanking
+setenforce 0
+sed -ri 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config
+getenforce
+grep '^SELINUX=' /etc/selinux/config
+</code></pre>
+<h3 id="firewall-and-rpm-dependencies">Firewall and RPM dependencies<a class="headerlink" href="#firewall-and-rpm-dependencies" title="Permanent link">&para;</a></h3>
+<p>Preserve remote access by configuring SSH and HTTPS before relying on the new firewall state:</p>
+<pre><code class="language-bash">dnf install -y firewalld httpd mod_ssl mod_auth_openidc
+firewall-offline-cmd --zone=public --add-service=ssh
+firewall-offline-cmd --zone=public --add-service=https
+systemctl enable --now firewalld
+firewall-cmd --zone=public --list-services
+</code></pre>
+<p>Open a second SSH session before closing the first one. Confirm the correct interface is assigned to the intended firewalld zone. Install EPEL only if the enabled RHEL repositories cannot supply <code>mod_auth_openidc</code>.</p>
+<p>Use a normal installer umask, normally <code>022</code>:</p>
+<pre><code class="language-bash">umask
+umask 022
+</code></pre>
+<p>A restrictive inherited umask can make runtime files unreadable to the <code>jetty</code> or web-server accounts.</p>
+<h2 id="5-freeze-and-validate-installer-inputs">5. Freeze and validate installer inputs<a class="headerlink" href="#5-freeze-and-validate-installer-inputs" title="Permanent link">&para;</a></h2>
+<h3 id="where-to-obtain-the-software">Where to obtain the software<a class="headerlink" href="#where-to-obtain-the-software" title="Permanent link">&para;</a></h3>
+<p>The VM installer is public, but the Open Banking profile overlay is not a public standalone RPM or anonymous download. Obtain each input as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jans installer wrapper, <code>install.py</code></td>
+<td>Public <a href="https://github.com/JanssenProject/jans"><code>JanssenProject/jans</code></a> repository</td>
+</tr>
+<tr>
+<td>Jans setup source, <code>jans.zip</code></td>
+<td>A release tag or reviewed commit from the same public Jans repository</td>
+</tr>
+<tr>
+<td>Open Banking profile, <code>openbanking.zip</code></td>
+<td>Private <a href="https://github.com/GluuFederation/openbanking"><code>GluuFederation/openbanking</code></a> repository; the deploying GitHub account must be granted access by the Gluu delivery/support owner, or must receive an approved release archive through the organization's secure delivery channel</td>
+</tr>
+<tr>
+<td>Optional Flex/Admin UI RPM and signature bundle</td>
+<td><a href="https://github.com/GluuFederation/flex/releases">Gluu Flex GitHub releases</a>; an SSA obtained through the Gluu trial or subscription process is also required for licensing</td>
+</tr>
+</tbody>
+</table>
+<p>The <a href="https://docs.gluu.org/stable/openbanking/install-vm/">official Open Banking VM guide</a> documents the convenience entry point:</p>
+<pre><code class="language-bash">curl --fail --location --output install.py \
+  https://raw.githubusercontent.com/JanssenProject/jans/main/jans-linux-setup/jans_setup/install.py
+sudo python3 install.py --profile openbanking
+</code></pre>
+<p>That wrapper downloads Jans setup and its selected component artifacts. For the Open Banking profile it also requests a GitHub access token so it can retrieve the private overlay. Do not put a token in the URL, shell history, a logged command-line argument, or this guide. The tested wrapper reads its interactive token prompt visibly, so use it only from a private console; the reproducible staged method below is preferred.</p>
+<p>For a pinned deployment, obtain the public files at the approved Jans tag or commit:</p>
+<pre><code class="language-bash">JANS_REF='&lt;approved-jans-tag-or-full-commit&gt;'
+
+curl --fail --location --output /secure/source/install.py \
+  &quot;https://raw.githubusercontent.com/JanssenProject/jans/${JANS_REF}/jans-linux-setup/jans_setup/install.py&quot;
+curl --fail --location --output /secure/source/jans.zip \
+  &quot;https://github.com/JanssenProject/jans/archive/${JANS_REF}.zip&quot;
+</code></pre>
+<p>After access to the private Open Banking repository has been approved, use an authenticated Git credential helper to create the overlay archive without placing credentials in the command:</p>
+<pre><code class="language-bash">OB_REF='&lt;approved-openbanking-tag-or-full-commit&gt;'
+
+git clone https://github.com/GluuFederation/openbanking.git /secure/source/openbanking
+git -C /secure/source/openbanking checkout --detach &quot;$OB_REF&quot;
+git -C /secure/source/openbanking archive \
+  --format=zip --output=/secure/source/openbanking.zip &quot;$OB_REF&quot;
+</code></pre>
+<p>If repository access is not available, stop and request the approved <code>openbanking.zip</code> plus its tag/commit, checksum, and provenance from the Gluu delivery/support owner. Do not substitute an arbitrary attachment or an unverified archive.</p>
+<p>Obtain and freeze these inputs before continuing:</p>
+<ul>
+<li>the official <code>install.py</code> wrapper;</li>
+<li>a Jans source archive pinned to <code>JANS_REF</code>;</li>
+<li>the private Open Banking archive pinned to <code>OB_REF</code>;</li>
+<li>every RPM/WAR/JAR or other component artifact selected by the underlying Jans setup;</li>
+<li>a compatible, reviewed overlay if the pinned sources need the corrections described below.</li>
+<li>the pinned Flex/Admin UI source and binary bundle when Admin UI is in scope;</li>
+<li>the Flex SSA in a separate root-owned <code>0600</code> file.</li>
+</ul>
+<p>Create protected staging and evidence directories:</p>
+<pre><code class="language-bash">install -d -m 0700 /opt/dist/jans
+install -d -m 0700 /root/openbanking-evidence-YYYYMMDDTHHMMSSZ/inputs
+install -m 0700 /secure/source/install.py /opt/dist/jans/install.py
+install -m 0600 /secure/source/jans.zip /opt/dist/jans/jans.zip
+install -m 0600 /secure/source/openbanking.zip /opt/dist/jans/openbanking.zip
+sha256sum /opt/dist/jans/install.py /opt/dist/jans/jans.zip /opt/dist/jans/openbanking.zip
+unzip -t /opt/dist/jans/jans.zip
+unzip -t /opt/dist/jans/openbanking.zip
+</code></pre>
+<p>Copy the checksum output into the protected evidence directory. <code>unzip -t</code> checks integrity only; it does not prove extraction is safe. Explicitly scan ZIP members and reject absolute paths, <code>..</code> traversal, symlink entries, and embedded private keys. Legitimate setup archives may contain executable scripts. The Open Banking ZIP must contain the expected <code>jans-linux-setup/openbanking</code> subtree.</p>
+<p>The three files shown above are only the wrapper and source/profile inputs. They are not a complete offline installation bundle. <code>-use-downloaded</code> is valid only after a pinned download-only stage or an approved artifact bundle has populated every component selected by the underlying setup and every file has been hash-verified.</p>
+<h3 id="mandatory-compatibility-review">Mandatory compatibility review<a class="headerlink" href="#mandatory-compatibility-review" title="Permanent link">&para;</a></h3>
+<p>Before installation, extract copies into a temporary staging directory and confirm:</p>
+<ol>
+<li>RHEL 9 maps to the installer's RPM path (<code>red 9</code>).</li>
+<li>The Open Banking HTTPD template is named <code>templates/apache/https_jans.conf.mako</code>; the current setup renders the Mako template, not the legacy <code>https_jans.conf</code> file.</li>
+<li>The template renders without an undefined <code>jans_fido2_port</code> when FIDO2 is not selected.</li>
+<li>Public discovery and JWKS are proxied, while <code>/jans-auth/restv1/token</code>, <code>/jans-auth/restv1/register</code>, and <code>/jans-auth/restv1/revoke</code> retain <code>SSLVerifyClient require</code>.</li>
+<li>The RFC 7009 revocation path is present externally, not only on the Jans Auth loopback listener.</li>
+<li><code>Registration.py</code> uses the available <code>HttpService2</code> API, for example through an intentionally reviewed compatibility import, rather than the removed <code>HttpService</code> class.</li>
+<li>No unused test private key is shipped into the live setup tree.</li>
+<li>Every referenced class exists in the pinned Jans artifacts.</li>
+</ol>
+<p>Render-test the template and run <code>httpd -t</code> against generated configuration before accepting a compatibility overlay. Build one final corrected overlay containing the complete reviewed change set; preserve the immutable original and intermediate archives instead of overwriting them. Install the core platform with that final hashed overlay before proceeding to Admin UI. In the verified build, that was <code>openbanking.v5.zip</code>; its hash is version-specific.</p>
+<h2 id="6-prepare-installation-answers-safely">6. Prepare installation answers safely<a class="headerlink" href="#6-prepare-installation-answers-safely" title="Permanent link">&para;</a></h2>
+<p>The setup properties collect the interface IP, FQDN, certificate subject, support email, application memory, persistence choice, signing-key choice, and administrator password. Keep the root-owned <code>0600</code> properties file outside <code>/opt/jans/jans-setup</code>, because the wrapper replaces that setup tree.</p>
+<ul>
+<li>Use the static address shown by <code>ip -brief address</code>, not a public NAT address absent from the VM.</li>
+<li>Select MySQL for the tested Open Banking profile.</li>
+<li>Use only an approved <code>staticKid</code>. If Jans generates signing keys, verify the chosen key exists; leaving <code>staticKid</code> empty is safer than referencing a nonexistent key.</li>
+<li>Keep the password in a root-owned <code>0600</code> file or enter it at a non-echoing prompt. Do not put it in command arguments or shell history.</li>
+<li>Keep SSA and private-key material root-owned and <code>0600</code>. Do not decode or print the SSA into logs.</li>
+<li>Print and retain only a sanitized, non-secret answer summary.</li>
+</ul>
+<p>Create <code>/root/openbanking-setup.properties</code> under <code>umask 077</code>, then confirm <code>root:root</code> ownership and mode <code>0600</code>. Keep the administrator password out of the visible command line and append it only from a protected input or non-echoing prompt.</p>
+<h2 id="7-install-the-open-banking-profile">7. Install the Open Banking profile<a class="headerlink" href="#7-install-the-open-banking-profile" title="Permanent link">&para;</a></h2>
+<p>The official online entry point is:</p>
+<pre><code class="language-bash">sudo python3 install.py --profile openbanking
+</code></pre>
+<p>For a controlled deployment, prefer a frozen or targeted bundle containing only the selected components. A pinned download-only workflow may be used if that installer version supports targeted selection, but avoid an unfiltered nightly download-all run: it may fetch unselected components and fail on unrelated missing artifacts. Preserve its logs, inventory every selected artifact, hash them, and resolve any relevant failure before installation.</p>
+<p>Only after the complete selected bundle is present should the downloaded-input path be used:</p>
+<pre><code class="language-bash">cd /opt/dist/jans
+sudo python3 ./install.py -use-downloaded -yes --profile openbanking \
+  --args=&quot;-f /root/openbanking-setup.properties --no-progress&quot;
+</code></pre>
+<p>The wrapper extracts Jans setup, applies the Open Banking overlay, passes <code>--use-downloaded</code> to the underlying setup, and invokes it. Keep the full wrapper and underlying setup logs root-only.</p>
+<p>In the verified RHEL 9.8 run, the download-only phase stopped on an unselected Shibboleth nightly artifact. The selected Auth and Config API artifacts were independently verified, and the underlying setup was then run directly. Treat that as a documented incident recovery, not as the normal installation path.</p>
+<p>Do not trust the wrapper's exit code by itself: its child invocation can fail without making the wrapper fail. Installation passes only when the underlying setup log contains:</p>
+<pre><code class="language-text">Janssen Server installation successful!
+</code></pre>
+<p>and the expected files, services, and endpoints pass the next section. On the first real exception, stop. Do not blindly rerun after a partial database import.</p>
+<h2 id="8-validate-the-core-installation">8. Validate the core installation<a class="headerlink" href="#8-validate-the-core-installation" title="Permanent link">&para;</a></h2>
+<p>Start with service, listener, and permission checks:</p>
+<pre><code class="language-bash">systemctl --failed
+systemctl status httpd mysqld jans-auth jans-config-api firewalld --no-pager
+systemctl is-enabled httpd mysqld jans-auth jans-config-api firewalld
+httpd -t
+ss -lntup
+</code></pre>
+<p>Verify that <code>jetty</code> can traverse parent directories and read its environment files, startup files, WAR/JAR/XML files, database configuration, and keystores. Fix only the narrow ownership or mode error; never make the entire tree world-readable or writable.</p>
+<p>Then test, through the external hostname:</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Expected result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OIDC discovery</td>
+<td>HTTP 200; valid JSON; issuer equals <code>https://FQDN</code></td>
+</tr>
+<tr>
+<td>Public JWKS</td>
+<td>HTTP 200; valid JWK set; no private <code>d</code> members</td>
+</tr>
+<tr>
+<td>Config API liveness/readiness</td>
+<td>HTTP 200 and <code>UP</code></td>
+</tr>
+<tr>
+<td>Token without client certificate</td>
+<td>TLS/client-auth rejection</td>
+</tr>
+<tr>
+<td>Registration without client certificate</td>
+<td>TLS/client-auth rejection</td>
+</tr>
+<tr>
+<td>Revocation without client certificate</td>
+<td>TLS/client-auth rejection</td>
+</tr>
+<tr>
+<td>Token with approved mTLS client</td>
+<td>HTTP 200</td>
+</tr>
+<tr>
+<td>Scoped Config API read</td>
+<td>HTTP 200</td>
+</tr>
+<tr>
+<td>Revoke token</td>
+<td>HTTP 200</td>
+</tr>
+<tr>
+<td>Reuse revoked token</td>
+<td>HTTP 401</td>
+</tr>
+</tbody>
+</table>
+<p>The following examples reproduce the public, non-secret checks. Set <code>ROUTE_IP</code> to the address reached by the client and use the trusted local or public CA file; do not expose client keys in command history.</p>
+<pre><code class="language-bash">FQDN=FQDN.example.org
+ROUTE_IP=192.0.2.10
+CA_CERT=/secure/path/test-ca.crt
+
+curl --fail --silent --show-error \
+  --resolve &quot;${FQDN}:443:${ROUTE_IP}&quot; --cacert &quot;${CA_CERT}&quot; \
+  &quot;https://${FQDN}/.well-known/openid-configuration&quot;
+
+curl --fail --silent --show-error \
+  --resolve &quot;${FQDN}:443:${ROUTE_IP}&quot; --cacert &quot;${CA_CERT}&quot; \
+  &quot;https://${FQDN}/jans-auth/restv1/jwks&quot;
+
+curl --fail --silent --show-error \
+  --resolve &quot;${FQDN}:443:${ROUTE_IP}&quot; --cacert &quot;${CA_CERT}&quot; \
+  &quot;https://${FQDN}/jans-config-api/api/v1/health&quot;
+
+# Expected to fail at the TLS/client-certificate boundary.
+curl --verbose --resolve &quot;${FQDN}:443:${ROUTE_IP}&quot; --cacert &quot;${CA_CERT}&quot; \
+  -X POST &quot;https://${FQDN}/jans-auth/restv1/token&quot;
+curl --verbose --resolve &quot;${FQDN}:443:${ROUTE_IP}&quot; --cacert &quot;${CA_CERT}&quot; \
+  -X POST &quot;https://${FQDN}/jans-auth/restv1/register&quot;
+curl --verbose --resolve &quot;${FQDN}:443:${ROUTE_IP}&quot; --cacert &quot;${CA_CERT}&quot; \
+  -X POST &quot;https://${FQDN}/jans-auth/restv1/revoke&quot;
+</code></pre>
+<p>Use approved, secret-safe validators for the credential-bearing sequence. On the verified server they are staged in the protected evidence area as <code>validate_platform_state.py</code>, <code>validate_core_openbanking.py</code>, and <code>validate_adminui_browser_no_client_cert.py</code>. Review and parameterize them before use.</p>
+<p>Trust the test CA explicitly where possible. If a test temporarily uses <code>curl -k</code>, record that server-certificate verification was bypassed; this does not test server identity and must never be confused with client mTLS enforcement.</p>
+<p>A public-CA certificate is not required for this test topology. Regenerate a locally issued server certificate containing the FQDN in <code>subjectAltName</code>, distribute the local test CA through a secure channel, and configure clients to trust it. The defect in the verified host is the CN-only certificate, not the absence of a public CA.</p>
+<h2 id="9-install-admin-ui-as-a-separate-licensed-phase">9. Install Admin UI as a separate licensed phase<a class="headerlink" href="#9-install-admin-ui-as-a-separate-licensed-phase" title="Permanent link">&para;</a></h2>
+<p>The Open Banking profile does not install Admin UI. If it is required:</p>
+<p>Keep the order exact: install core with the final hashed Open Banking overlay, validate core, install the pinned Flex/Admin UI build, then run the build-specific Admin UI compatibility helper and repeat all validation.</p>
+<ol>
+<li>Select a Flex/Admin UI build compatible with the pinned Jans commit.</li>
+<li>Record its version, source commit, signature/checksum, and dependencies.</li>
+<li>Back up the live Jans setup, database configuration, <code>/etc/httpd/conf.d/https_jans.conf</code>, and generated frontend files.</li>
+<li>Store the Flex SSA as a root-owned <code>0600</code> file. Do not pass it to <code>flex_setup.py</code>; that installer has no SSA/license argument.</li>
+<li>Run the compatible Flex installer from its staged directory. The tested command was:</li>
+</ol>
+<p><code>bash
+   install -d -m 0700 "$EVIDENCE_DIR/admin-ui/logs"
+   cd /opt/jans/jans-setup/flex/flex-linux-setup
+   python3 ./flex_setup.py --install-admin-ui --flex-non-interactive \
+     --adminui_authentication_mode simple_password_auth \
+     &gt; "$EVIDENCE_DIR/admin-ui/logs/flex-admin-ui-install-console.log" 2&gt;&amp;1
+   adminui_setup_status=$?
+   printf '%s\n' "$adminui_setup_status" \
+     &gt; "$EVIDENCE_DIR/admin-ui/logs/flex-admin-ui-install-exit-status"</code></p>
+<ol>
+<li>Inspect both <code>/opt/jans/jans-setup/logs/flex-setup.log</code> and <code>/opt/jans/jans-setup/logs/flex-setup-error.log</code>; do not trust the exit status alone.</li>
+<li>Retrieve and activate the license afterward through the Admin UI license API, reading the SSA from its protected file. Keep request/response bodies root-only because they contain license material.</li>
+<li>Confirm the <code>/admin/</code> route, web and backend clients, scopes, role/permission mappings, update-token script, and Config API plugin.</li>
+<li>Only after the Admin UI asset exists, run the reviewed <code>apply-adminui-openbanking-compat-v1.py</code> helper. It must assert the expected old/new frontend patterns and exact build hash or stop. The final overlay does not by itself preserve every runtime mutation.</li>
+</ol>
+<h3 id="required-open-bankingadmin-ui-integration-checks">Required Open Banking/Admin UI integration checks<a class="headerlink" href="#required-open-bankingadmin-ui-integration-checks" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Verify <code>staticKid</code> names an existing RS256 signing key. When generated keys are used, clear a stale value in the live <code>jansAppConf</code> JSON, saved <code>/opt/jans/jans-setup/output/jans-auth/jans-auth-config.json</code>, and retained setup-properties copies; then restart only <code>jans-auth</code>.</li>
+<li>Admin UI backend JWT Authorization headers can exceed 8 KiB. Back up <code>/etc/httpd/conf.d/https_jans.conf</code>, its setup template, and <code>/opt/jans/jetty/jans-config-api/start.d/server.ini</code>. Place <code>LimitRequestFieldSize 16384</code> inside the HTTPS virtual host and set <code>jetty.httpConfig.requestHeaderSize=16384</code> in <code>server.ini</code>. Run <code>httpd -t</code>, reload HTTPD, restart only <code>jans-config-api</code>, and verify an authorized request larger than 8 KiB reaches Config API.</li>
+<li>Preserve the Admin UI-facing <code>/jans-config-api/api/v1/stat</code> API. Externally proxy <code>/jans-auth/restv1/internal/stat</code> to <code>http://localhost:8081/jans-auth/restv1/internal/stat</code>; Jans Auth still enforces bearer authorization.</li>
+<li>Ensure the installed <code>/admin/env-config.js</code> is web-readable (<code>0644</code> in the tested deployment); it contains public endpoint configuration, not secrets. Patch the staged Flex installer so reinstall preserves this mode.</li>
+<li>Preserve discovery metadata needed by the frontend: <code>userinfo_endpoint</code>, <code>end_session_endpoint</code>, <code>revocation_endpoint</code>, and <code>introspection_endpoint</code>. Update both live database configuration and saved setup output, then restart <code>jans-auth</code>.</li>
+<li>If the role-based update-token script must be installed or enabled, back up its <code>jansCustomScr</code> row first.</li>
+</ul>
+<h3 id="prevent-the-post-login-redirecting-loop">Prevent the post-login <code>Redirecting...</code> loop<a class="headerlink" href="#prevent-the-post-login-redirecting-loop" title="Permanent link">&para;</a></h3>
+<p>A browser public client performing authorization-code + PKCE has no client TLS certificate. It will receive HTTP 403 if its code exchange uses an HTTPD location with unconditional <code>SSLVerifyClient require</code>.</p>
+<p>Use a narrowly scoped, reviewed adapter design:</p>
+<ul>
+<li>Keep the original Open Banking <code>/jans-auth/restv1/token</code>, <code>/jans-auth/restv1/register</code>, and <code>/jans-auth/restv1/revoke</code> routes mTLS-only.</li>
+<li>Add dedicated Admin UI adapter paths without Apache client-certificate enforcement: <code>/jans-auth/restv1/admin-ui-token</code> proxies only to <code>http://localhost:8081/jans-auth/restv1/token</code>, and <code>/jans-auth/restv1/admin-ui-revoke</code> proxies only to <code>http://localhost:8081/jans-auth/restv1/revoke</code>.</li>
+<li>Configure only the Admin UI OIDC frontend to use those adapter paths for PKCE exchange and logout.</li>
+<li>Prefer a reviewed source build. If an installed minified asset must be patched, require a timestamped backup plus exact file hash and unique occurrence checks; the generated asset filename is build-specific, so never edit it blindly.</li>
+<li>Do not remove or relax <code>SSLVerifyClient require</code> on the original Open Banking routes.</li>
+</ul>
+<p>Because this changes a security boundary, require explicit approval, back up every affected file, validate <code>httpd -t</code>, and rerun both the browser and Open Banking mTLS test suites. Both adapter URLs are publicly reachable without a client certificate; Jans authorization-code, PKCE, client-credential, token, and grant validation becomes the security boundary there. Compromised credentials for another client could potentially use an adapter to bypass Apache's original mTLS boundary. The original Open Banking URLs remain protected by Apache mTLS.</p>
+<h2 id="10-full-acceptance-test">10. Full acceptance test<a class="headerlink" href="#10-full-acceptance-test" title="Permanent link">&para;</a></h2>
+<p>The installation is complete only after all of the following pass before and after a reboot:</p>
+<ul>
+<li>zero failed systemd units;</li>
+<li><code>httpd</code>, <code>mysqld</code>, <code>jans-auth</code>, <code>jans-config-api</code>, and <code>firewalld</code> active and enabled;</li>
+<li>persistent 2 GiB swap and SELinux permissive state;</li>
+<li>valid HTTPD syntax and expected listeners;</li>
+<li>discovery, public JWKS, and Config API health;</li>
+<li>real browser <code>/admin/</code> load, login, dashboard, harmless authorized backend read, logout, and session deletion;</li>
+<li>fresh-cookie, no-client-certificate Admin UI PKCE exchange, ID-token validation, UserInfo, backend token, and revocation;</li>
+<li>original Open Banking token/register/revoke rejection without a client certificate;</li>
+<li>mTLS sequence: token <code>200</code> -&gt; scoped Config API read <code>200</code> -&gt; revoke <code>200</code> -&gt; token reuse <code>401</code>;</li>
+<li>no private keys, passwords, full tokens, client assertions, or SSA content in shared evidence.</li>
+</ul>
+<p>Reboot gate:</p>
+<pre><code class="language-bash">reboot
+</code></pre>
+<p>After reconnecting, repeat the service, discovery, JWKS, health, browser, no-certificate, and complete mTLS checks. A pre-reboot pass alone is insufficient.</p>
+<p>Run the protected server-side validators after core installation, after Admin UI integration, and again after reboot:</p>
+<pre><code class="language-bash">cd &quot;$EVIDENCE_DIR/admin-ui/stage&quot;
+python3 validate_platform_state.py
+python3 validate_core_openbanking.py
+python3 validate_adminui_browser_no_client_cert.py
+</code></pre>
+<p>The core validator must explicitly report token/read/revoke/reuse as <code>200/200/200/401</code> and confirm that all three original token/register/revoke endpoints reject clients without a certificate.</p>
+<h2 id="11-known-issue-ssa-dynamic-client-registration">11. Known issue: SSA dynamic client registration<a class="headerlink" href="#11-known-issue-ssa-dynamic-client-registration" title="Permanent link">&para;</a></h2>
+<p>Do not claim end-to-end Open Banking registration is complete merely because the registration script initializes.</p>
+<p>The verified RHEL 9.8 deployment remains blocked for SSA DCR until all of these are available and corrected:</p>
+<ul>
+<li>the matching Open Banking Directory signing key;</li>
+<li>transport PKCS#12 and its securely delivered password;</li>
+<li>the matching truststore;</li>
+<li>an approved TPP mTLS certificate;</li>
+<li>the missing <code>ScopeService</code> import in <code>Registration.py</code>;</li>
+<li>removal of logging that exposes token responses or complete client-assertion POST data.</li>
+</ul>
+<p>After those items are supplied securely, rerun script-load checks and exercise the complete registration path while monitoring sanitized Jans Auth logs.</p>
+<h2 id="12-troubleshooting-map">12. Troubleshooting map<a class="headerlink" href="#12-troubleshooting-map" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>Corrective action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Setup fails rendering HTTPD config</td>
+<td>Legacy template selected or undefined FIDO2 variable</td>
+<td>Use a reviewed <code>https_jans.conf.mako</code> overlay and render-test it before install</td>
+</tr>
+<tr>
+<td>Wrapper exits <code>0</code>, services absent</td>
+<td>Child setup failed</td>
+<td>Inspect underlying setup logs and require the exact success terminus</td>
+</tr>
+<tr>
+<td>Public JWKS returns <code>404</code></td>
+<td>Open Banking HTTPD overlay omitted the proxy</td>
+<td>Add the public JWKS location without changing protected mTLS routes</td>
+</tr>
+<tr>
+<td>Public revoke returns <code>404</code></td>
+<td>RFC 7009 proxy missing</td>
+<td>Add the revoke proxy with <code>SSLVerifyClient require</code></td>
+</tr>
+<tr>
+<td>Registration script import error</td>
+<td>Removed <code>HttpService</code> class</td>
+<td>Review and use the compatible <code>HttpService2</code> API/import</td>
+</tr>
+<tr>
+<td>Signing/token failure</td>
+<td><code>staticKid</code> references no generated key</td>
+<td>Select an existing RS256 key or clear the stale static value</td>
+</tr>
+<tr>
+<td>Admin UI request fails with a large header</td>
+<td>HTTPD or Jetty header limit is too small</td>
+<td>Apply the approved <code>16384</code>-byte limit at both boundaries</td>
+</tr>
+<tr>
+<td>Dashboard statistics fail</td>
+<td>Jans Auth statistics proxy absent</td>
+<td>Preserve the Config API request path and add its authenticated <code>/jans-auth/restv1/internal/stat</code> backend proxy</td>
+</tr>
+<tr>
+<td><code>env-config.js</code> returns <code>403</code></td>
+<td>Root-only generated mode</td>
+<td>Make only that public file web-readable; keep secret files protected</td>
+</tr>
+<tr>
+<td>Admin UI stays on <code>Redirecting...</code></td>
+<td>Browser PKCE posts to the mTLS-only token path</td>
+<td>Use dedicated Admin UI adapters; retain mTLS on original OB routes</td>
+</tr>
+<tr>
+<td>Strict client rejects HTTPS</td>
+<td>Server certificate has no SAN or CA is untrusted</td>
+<td>Install a SAN-bearing certificate and distribute/trust the correct CA</td>
+</tr>
+</tbody>
+</table>
+<h2 id="13-evidence-handoff-and-rollback">13. Evidence, handoff, and rollback<a class="headerlink" href="#13-evidence-handoff-and-rollback" title="Permanent link">&para;</a></h2>
+<p>Keep a root-only evidence directory containing:</p>
+<ul>
+<li>OS and preflight output;</li>
+<li>source commits, download URLs, signatures, and SHA-256 values;</li>
+<li>sanitized installation answers;</li>
+<li>original and corrected overlay manifests;</li>
+<li>configuration backups and a change log;</li>
+<li>setup logs, service states, endpoint summaries, and test result codes;</li>
+<li>pre- and post-reboot validation;</li>
+<li>remaining limitations and untested flows.</li>
+</ul>
+<p>Take a VM/provider snapshot immediately before the first mutation. Before each correction, back up the live file, its template or saved-output copy, and affected database rows. On <code>httpd -t</code> failure, restore both the live and template copies before any reload. After a partial database import, preserve logs and state; do not rerun or uninstall until the first causal error is understood.</p>
+<p>The Jans uninstall operation removes product data and is destructive:</p>
+<pre><code class="language-bash">python3 /opt/jans/jans-setup/install.py -uninstall
+</code></pre>
+<p>Run it only with explicit approval and after preserving required evidence and data. Restore backed-up firewall, SELinux, hosts, and HTTPD configuration only when doing so will not strand the operator.</p>
+<h2 id="appendix-a-verified-test-host-artifacts">Appendix A: verified test-host artifacts<a class="headerlink" href="#appendix-a-verified-test-host-artifacts" title="Permanent link">&para;</a></h2>
+<p>These values document one successful RHEL 9.8 nightly installation. They are audit references, not automatically approved inputs for another server.</p>
+<table>
+<thead>
+<tr>
+<th>Reference</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pinned Jans source commit</td>
+<td><code>e8f0f0b69f8a4f70c01590dce14ea23cdff31ab3</code></td>
+</tr>
+<tr>
+<td>Pinned Flex source commit</td>
+<td><code>9da594e183f59f92f50cc8feda8845d0d5081c9a</code></td>
+</tr>
+<tr>
+<td>Pinned Jans archive</td>
+<td><code>fdf6a3a3a4200ee2cb882e840b28d322291d3294ccc2302530d7d5439493e890</code></td>
+</tr>
+<tr>
+<td><code>install.py</code></td>
+<td><code>51e2c4c6ca2ea376a68d4417541644293affff4d59a47b9d783ad3542ed6cc5f</code></td>
+</tr>
+<tr>
+<td>Final Open Banking/Admin UI overlay, <code>/opt/dist/jans/openbanking.v5.zip</code></td>
+<td><code>0b332d22bbbd7a7fbf15461bd2f5b42e81ef83b9ace2e7057955eeb4b6ca4380</code></td>
+</tr>
+<tr>
+<td>Admin UI compatibility helper, <code>/opt/dist/jans/apply-adminui-openbanking-compat-v1.py</code></td>
+<td><code>3f5c49858346feb42f1da2f932014970d264836090c70771ac55332f2e69a29f</code></td>
+</tr>
+<tr>
+<td>Admin UI nightly build</td>
+<td><code>c2929a9886956b663d4c2883c88bb64da139f4f1c3661bd93e84305b68ff96b9</code></td>
+</tr>
+<tr>
+<td>Flex setup used for Admin UI</td>
+<td><code>45433eaabb115dd131645d994121c88bef87f550898552b2e02bc6198dd0064b</code></td>
+</tr>
+</tbody>
+</table>
+<p>The verified host used a client hosts entry for <code>54.213.215.176 testobrhel9.gluu.info</code>; public DNS did not point at it. Its generated server certificate was CN-only without a SAN. Rotate the administrator password during handoff because it appeared in collaboration history; the password itself is intentionally absent from this guide.</p>
+              
+            </div>
+          </div><footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+  </span>
+</div>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = ".";</script>
+    <script src="js/theme_extra.js"></script>
+    <script src="js/theme.js"></script>
+      <script src="search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.6.1
+Build Date UTC : 2026-09-14 06:58:18.501685+00:00
+-->
